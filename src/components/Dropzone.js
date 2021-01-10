@@ -64,6 +64,7 @@ const Dropzone = (props) => {
     Promise.all(files.map(file => uploadFile(file)))
       .then(files => {
         setUploading(false);
+        setFiles([]);
       }).catch(e => console.log(e));
   }
 
@@ -75,16 +76,17 @@ const Dropzone = (props) => {
     const options = {
       headers: {'Content-Type': 'application/json'}
     }
-    return axios.put(
-      API_URL+'/files', params, options)
-      .then(res => {
-        const img_options = {
-          headers: {
-            'Content-Type': file.type
-          }
-        };
-        return axios.put(res.data.file_upload_url, file, img_options);
-      });
+    axios.post(API_URL+'/files', params, options)
+    .then(res => {
+      const body = JSON.parse(res.data.body);
+      const presigned_url = body.presigned_url;
+      const file_options = {
+        headers: {
+          'Content-Type': file.type
+        }
+      };
+      axios.put(presigned_url, file, file_options);
+    }).catch(e => console.log(e));
   }
 
   return (
