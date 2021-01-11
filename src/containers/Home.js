@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -10,8 +11,9 @@ import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import FileCopy from '@material-ui/icons/FileCopy';
-// import axios from 'axios';
-// import AWS from 'aws-sdk';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API;
 
 const useStyles = makeStyles (theme => ({
   table: {
@@ -25,15 +27,33 @@ const createData = (fileName, storedAt, byte) => {
   };
 }
 
-const rows = [
-  createData('a.text', "2020-12-01 00:00:00", '12GB'),
-  createData('b.text', "2020-12-02 00:00:00", '10GB'),
-  createData('c.text', "2020-12-03 00:00:00", '2GB'),
-  createData('d.text', "2020-12-04 00:00:00", '8GB'),
-  createData('e.text', "2020-12-05 00:00:00", '4GB'),
-]
+const bytesToSize = (bytes) => {
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return '0 Byte';
+  const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
 
-const Home = () => {
+const Home = (props) => {
+  const [rows, setRows] = useState({ hits: [] });
+
+  useEffect(() => {
+    const options = {
+      headers: {'Content-Type': 'application/json'}
+    }
+     axios.get(API_URL+'/files', options)
+      .then((res) => {
+        const results = res.data.body;
+        const datas = results.map((result) => {
+          return createData(result['Key'], result['LastModified'], bytesToSize(result['Size']))
+        });
+        setRows({hits: datas});
+      }).catch((e) => {
+        console.log(e);
+        setRows({hits: []})
+      })
+  }, []);
+
   const classes = useStyles();
   return (
     <Box m={4}>
@@ -59,7 +79,7 @@ const Home = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
+            {rows.hits.map((row) => (
               <TableRow key={row.fileName}>
                 <TableCell component="th" scope="row">
                   {row.fileName}
