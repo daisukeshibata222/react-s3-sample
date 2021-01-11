@@ -3,6 +3,10 @@ import { useDropzone } from "react-dropzone";
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogActions from '@material-ui/core/DialogActions';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API;
@@ -35,6 +39,9 @@ const useStyles = makeStyles (theme => ({
 const Dropzone = (props) => {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [openDlg, setOpenDlg] = useState(false);
+  const [dlgTitle, setDlgTitle] = useState('');
+  const [dlgContent, setDlgContent] = useState('');
 
   const classes = useStyles();
 
@@ -63,9 +70,24 @@ const Dropzone = (props) => {
     setUploading(true);
     Promise.all(files.map(file => uploadFile(file)))
       .then(files => {
+        setDlgTitle('ファイルアップロード');
+        setDlgContent('のアップロードが完了しました。');
+        setOpenDlg(true);
         setUploading(false);
-        setFiles([]);
-      }).catch(e => console.log(e));
+      }).catch(e => {
+        setDlgTitle('ファイルアップロード');
+        setDlgContent('のアップロードが失敗しました。');
+        setOpenDlg(true);
+        setUploading(false);
+        console.log(e);
+      });
+  }
+
+  const closeHundle = (event) => {
+    if (openDlg === true && (!event.keyCode || event.keyCode === 13 || event.keyCode === 27)) {
+      setOpenDlg(false);
+      setFiles([]);
+    }
   }
 
   const uploadFile = (file) => {
@@ -105,6 +127,17 @@ const Dropzone = (props) => {
           <ul className={classes.files}>{fileNames}</ul>
         </aside>
         <Button onClick={onUpload} variant="outlined" color="primary" disabled={disabled_button} className={classes.upButton} startIcon={<CloudUploadIcon />} >Upload</Button>
+        <Dialog open={openDlg} onKeyDown={closeHundle}>
+          <DialogTitle>{dlgTitle}</DialogTitle>
+          <DialogContent>
+            {fileNames}
+            <br/>
+            {dlgContent}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeHundle}>OK</Button>
+          </DialogActions>
+        </Dialog>
       </section>
     </div>
   );
