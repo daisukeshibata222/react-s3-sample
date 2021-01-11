@@ -11,6 +11,7 @@ import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import FileCopy from '@material-ui/icons/FileCopy';
+import Moment from 'moment';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API;
@@ -45,7 +46,7 @@ const Home = (props) => {
       .then((res) => {
         const results = res.data.body;
         const datas = results.map((result) => {
-          return createData(result['Key'], result['LastModified'], bytesToSize(result['Size']))
+          return createData(result['Key'], Moment(result['LastModified']).format("YYYY年MM月DD日"), bytesToSize(result['Size']))
         });
         setRows({hits: datas});
       }).catch((e) => {
