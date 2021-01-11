@@ -36,6 +36,10 @@ def lambda_handler(event, context):
 
         res = {
             'isBase64Encoded': False,
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json'
+            },
             'body': json.dumps(body),
         }
 
@@ -43,6 +47,10 @@ def lambda_handler(event, context):
     except Exception as e:
         res = {
             'isBase64Encoded': False,
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json'
+            },
             'body': json.dumps(''),
         }
         return res

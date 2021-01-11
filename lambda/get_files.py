@@ -19,6 +19,10 @@ def lambda_handler(event, context):
         if 'Contents' in bucket:
             res = {
                 'isBase64Encoded': False,
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json'
+                },
                 'body': json.loads(json.dumps(bucket['Contents'], default=str))
             }
             return res
@@ -27,6 +31,10 @@ def lambda_handler(event, context):
     except Exception as e:
         res = {
             'isBase64Encoded': False,
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json'
+            },
             'body': json.dumps(''),
         }
         return res
